@@ -10,6 +10,9 @@ import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentManager;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -27,10 +30,11 @@ public class recordFragment extends Fragment {
     private Chronometer chronometer;
     private String fileName;
     SendfileName SF;
+    private RecyclerView recyclerViewRecordings;
 
     @Nullable
     @Override
-    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable final ViewGroup container, @Nullable Bundle savedInstanceState) {
         final View view=inflater.inflate(R.layout.record_fragment,container,false);
 
         final FloatingActionButton record = (FloatingActionButton) view.findViewById(R.id.record);
@@ -46,17 +50,17 @@ public class recordFragment extends Fragment {
 
                 myAudioRecorder = new MediaRecorder();
 
-                myAudioRecorder.setAudioSource(MediaRecorder.AudioSource.DEFAULT);
+                myAudioRecorder.setAudioSource(MediaRecorder.AudioSource.MIC);
 
                 myAudioRecorder.setOutputFormat(MediaRecorder.OutputFormat.THREE_GPP);
 
                 File root = android.os.Environment.getExternalStorageDirectory();
-                File file = new File(root.getAbsolutePath() + "/VoiceRecorderSimplifiedCoding/Audios");
+                File file = new File(root.getAbsolutePath() + "/VoiceRecorder/Audios");
                 if (!file.exists()) {
                     file.mkdirs();
                 }
 
-                fileName =  root.getAbsolutePath() + "/VoiceRecorderSimplifiedCoding/Audios/" +
+                fileName =  root.getAbsolutePath() + "/VoiceRecorder/Audios/" +
                         String.valueOf(System.currentTimeMillis() + ".mp3");
                 Log.d("filename",fileName);
 
@@ -111,7 +115,14 @@ public class recordFragment extends Fragment {
                 stop.hide();
                 record.show();
                 SF.sendData(fileName);
-
+                try{
+                FragmentManager fm = getFragmentManager();
+                playFragment fragm = (playFragment) fm.findFragmentById(R.id.container);
+                Toast.makeText(getContext(),"Initializing",Toast.LENGTH_LONG).show();
+                fragm.initViews();
+                fragm.fetchRecordings();}catch (NullPointerException e){
+                    e.printStackTrace();
+                }
             }
         });
 
